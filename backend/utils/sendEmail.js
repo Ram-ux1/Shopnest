@@ -10,7 +10,18 @@ const sendEmail = async ()=>{
 
       }
     })
-  }catch(error){
 
+    const mailOptions = {
+      from:process.env.EMAIL_USER,
+      to, 
+      subject,
+      text
+    }
+
+    await transporter.sendMail(mailOptions)
+  }catch(error){
+    console.log("Error sending email: ", error)
   }
 }
+
+module.exports=sendEmail

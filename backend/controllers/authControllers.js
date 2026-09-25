@@ -1,10 +1,15 @@
+const bcrypt = require("bcryptjs")
+const sendEmail = require("../utils/sendEmail")
+const User = require("../model/User")
+const jwt = require("jsonwebtoken")
+
 
 
 const generateToken = (id)=>{
 return jwt.sign({id},process.env.JWT_SECRET, {expiresIn:'7d'})
 }
 
-const regsisterUser = async (req, res) => {
+const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
@@ -43,9 +48,45 @@ const regsisterUser = async (req, res) => {
     res.status(500).json({ message: "server error" })
   }
 }
-const loginUser = () => {
+
+
+
+
+const loginUser = async (req,res) => {
+  try{
+    const {email , password} = req.body()
+  const user = await User.find({email})
+  if(user && (await bcrypt.compare(password, user.password))){
+    res.json({
+      _id:user.id,
+      name:user.name,
+      email:user.email,
+      role:user.role,
+      token: generateToken(user._id)
+    })
+  }else{
+    res.status(400).json({
+      message:"email or password is inavlid"
+    })
+  }
+
+  }catch(error){
+    res.json({message: "Server error"})
+  }
 
 }
-const logoutUser = () => {
 
+
+
+
+const getUser = async (req,res) =>  {
+  
+    
+    try {
+      const user = await User.find({}).select('-password')
+    } catch (error) {
+      res.json({message: "server error"})
+    }
+    
 }
+module.exports = {registerUser,loginUser,getUser}
