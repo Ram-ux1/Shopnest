@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer")
 
-const sendEmail = async ()=>{
+const sendEmail = async (to, subject, text)=>{
   try{
     const transporter = nodemailer.createTransport({
       service: "Gmail",

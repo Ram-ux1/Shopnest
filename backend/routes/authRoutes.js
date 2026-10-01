@@ -9,3 +9,4 @@ router.post("/register" ,registerUser)
 router.post("/login" ,loginUser)
 router.get("/getUser" ,protect,admin ,getUser)
 
+module.exports = router 

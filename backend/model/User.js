@@ -8,7 +8,7 @@ const userScehma = new mongoose.Schema({
   email:{
     type:String,
     required:true,
-    unquie:true
+    unique:true
   },
   password:{
     type:String,
@@ -21,7 +21,7 @@ const userScehma = new mongoose.Schema({
     default:"user"
   }, 
   verified:{
-    type:boolean,
+    type:Boolean,
     default:false,
   }
 })

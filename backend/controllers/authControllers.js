@@ -30,7 +30,7 @@ const registerUser = async (req, res) => {
       `;
 
       await sendEmail(email, "Welcome To shopnest-Your otp for registration ", message)
-      res.status(201).json({
+     return res.status(201).json({
         _id: user._id,
         name: user.name,
         email:user.email,
@@ -38,7 +38,7 @@ const registerUser = async (req, res) => {
         token: generateToken(user._id)
       })
     }else{
-      res.status(400).json({message: 'Inavild user data'})
+     return res.status(400).json({message: 'Inavild user data'})
     }
 
 
@@ -54,10 +54,13 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req,res) => {
   try{
-    const {email , password} = req.body()
-  const user = await User.find({email})
+    const {email , password} = req.body
+  const user = await User.findOne({email})
+  console.log("Password:", password);
+console.log("User:", user);
+console.log("DB Password:", user?.password);
   if(user && (await bcrypt.compare(password, user.password))){
-    res.json({
+   return res.json({
       _id:user.id,
       name:user.name,
       email:user.email,
@@ -65,13 +68,15 @@ const loginUser = async (req,res) => {
       token: generateToken(user._id)
     })
   }else{
-    res.status(400).json({
+   return res.status(400).json({
       message:"email or password is inavlid"
     })
   }
 
   }catch(error){
-    res.json({message: "Server error"})
+    console.log("Error in loginUser controller: ", error)
+    return res.json({message: "Server error"})
+    
   }
 
 }
