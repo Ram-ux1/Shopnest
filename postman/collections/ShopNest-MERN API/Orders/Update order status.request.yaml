@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/order/6ae85bea4326020f0b70050c/status"
+method: PUT
+body:
+  type: json
+  content: "{\r\n    \"status\":\"pending\"\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0rw5}}"
+order: 5000

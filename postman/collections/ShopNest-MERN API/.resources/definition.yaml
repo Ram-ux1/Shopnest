@@ -1,6 +1,15 @@
 $kind: collection
 description: Postman collection generated from the Express route mounts and productRoutes.js shared in the screenshots. Set the baseUrl and token collection variables before testing protected routes.
 variables:
-  baseUrl: http://localhost:5000
-  productId: PASTE_PRODUCT_ID_HERE
-  token: ""
+  - key: baseUrl
+    value: http://localhost:5000
+    disabled: false
+  - key: productId
+    value: PASTE_PRODUCT_ID_HERE
+    disabled: false
+  - key: json_web_token_0rw5
+    secret: true
+    disabled: false
+  - key: token
+    value: ""
+    disabled: false

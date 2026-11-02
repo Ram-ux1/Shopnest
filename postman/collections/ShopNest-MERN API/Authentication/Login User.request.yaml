@@ -7,7 +7,7 @@ body:
   type: json
   content: |-
     {
-      "email": "sample@example.com",
-      "password": "Password123"
+      "email": "admin@shopnest.com",
+      "password": "admin123"
     }
 order: 2000

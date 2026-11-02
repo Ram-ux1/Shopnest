@@ -1,0 +1,45 @@
+$kind: http-request
+url: "{{baseUrl}}/api/order/"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"user\": \"6ae7461c32ee364a46078d65\",\r
+
+    \    \"items\": [\r
+
+    \        {\r
+
+    \            \"product\": \"6ae84ec7f79ef2706a720536\",\r
+
+    \            \"quantity\": 2,\r
+
+    \            \"price\": 500\r
+
+    \        }\r
+
+    \    ],\r
+
+    \    \"totalAmount\": 1000,\r
+
+    \    \"address\": {\r
+
+    \        \"fullName\": \"Ram Dayal Gupta\",\r
+
+    \        \"street\": \"Near Main Market\",\r
+
+    \        \"city\": \"Ghaziabad\",\r
+
+    \        \"postalCode\": \"201003\",\r
+
+    \        \"country\": \"India\"\r
+
+    \    }\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0rw5}}"
+order: 1000

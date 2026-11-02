@@ -1,0 +1,33 @@
+{
+  "name": "shopnest",
+  "version": "1.0.0",
+  "description": "Full Stack E-Commerce Application",
+  "private": true,
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev:server": "npm run dev --prefix backend",
+    "dev:client": "npm run dev --prefix frontend",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend",
+    "seed": "npm run seed --prefix backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ram-ux1/Shopnest.git"
+  },
+  "keywords": [
+    "react",
+    "nodejs",
+    "express",
+    "mongodb",
+    "ecommerce"
+  ],
+  "author": "Ram",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
