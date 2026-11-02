@@ -1,0 +1,31 @@
+$kind: http-request
+url: "{{baseUrl}}/api/product/{{productId}}"
+method: PUT
+body:
+  type: formdata
+  content:
+    - type: text
+      key: name
+      value: Updated Product
+    - type: text
+      key: description
+      value: Updated product description.
+    - type: text
+      key: price
+      value: "119.99"
+    - type: text
+      key: category
+      value: Electronics
+    - type: text
+      key: stock
+      value: "40"
+    - type: file
+      key: image
+      src:
+        - ""
+      disabled: true
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 4000

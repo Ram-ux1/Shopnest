@@ -1,0 +1,30 @@
+$kind: http-request
+url: "{{baseUrl}}/api/product/"
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: name
+      value: Sample Product
+    - type: text
+      key: description
+      value: A high-quality sample product.
+    - type: text
+      key: price
+      value: "99.99"
+    - type: text
+      key: category
+      value: Electronics
+    - type: text
+      key: stock
+      value: "50"
+    - type: file
+      key: image
+      src:
+        - ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 3000
