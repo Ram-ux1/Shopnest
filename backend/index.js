@@ -18,7 +18,7 @@ res.send("Shopnest backend is run properly  !")
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/product", require("./routes/productRoutes"));
 // app.use("/api/cart", require("./routes/cartRoutes"));
-// app.use("/api/order", require("./routes/orderRoutes"));
+app.use("/api/order", require("./routes/orderRoutes"));
 // app.use("/api/payment", require("./routes/paymentRoutes"));
 // app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
