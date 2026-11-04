@@ -1,5 +1,7 @@
 
 import React from "react";
+import { useState } from "react";
+import { newsletterAPI } from "../lib/api";
 import {
   FaInstagram,
   FaYoutube,
@@ -12,12 +14,26 @@ import {
 } from "react-icons/fa";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+
+  const subscribe = async (event) => {
+    event.preventDefault();
+    setNewsletterMessage("");
+    try {
+      const { data } = await newsletterAPI.subscribe(email);
+      setNewsletterMessage(data.message);
+      setEmail("");
+    } catch (error) {
+      setNewsletterMessage(error.response?.data?.message || "Subscription failed. Please try again.");
+    }
+  };
 
   const quickLinks = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
     { name: "Categories", path: "/categories" },
-    { name: "Deals", path: "/deals" },
+    { name: "Deals", path: "/shop" },
     { name: "About Us", path: "/about" },
   ];
 
@@ -159,12 +175,14 @@ const Footer = () => {
             </p>
 
             <form
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={subscribe}
               className="flex items-center bg-white rounded-lg overflow-hidden p-1"
             >
 
               <input
                 type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="Enter your email"
                 required
                 className="w-full min-w-0 px-3 py-2 text-sm text-[#24564D] outline-none placeholder:text-gray-400"
@@ -178,6 +196,7 @@ const Footer = () => {
               </button>
 
             </form>
+            {newsletterMessage && <p role="status" className="mt-2 text-xs">{newsletterMessage}</p>}
 
             <div className="flex items-center gap-2 mt-3 text-[#24564D]/80 text-xs">
               <FaEnvelope />

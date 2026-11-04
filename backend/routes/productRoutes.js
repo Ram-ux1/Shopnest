@@ -4,7 +4,16 @@ const { protect } = require("../middleware/authMiddleware");
 const { admin } = require("../middleware/adminMiddleware");
 const { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct } = require("../controller/productController");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" }); // Configure multer to store uploaded files in the "uploads" directory
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, callback) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return callback(new Error("Only image uploads are supported"));
+    }
+    callback(null, true);
+  },
+});
 
 // Configure multer for file uploads
 router.get("/", getAllProducts);

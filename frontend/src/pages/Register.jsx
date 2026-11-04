@@ -1,5 +1,7 @@
 
 import React, { useState } from "react";
+import { useAuth } from "../context/authContext";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,24 +13,42 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError("");
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
 
-    // Connect your registration API here
-    console.log("Registration Data:", formData);
+    setLoading(true);
+    const result = await register({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+    });
+    setLoading(false);
+
+    if (result.success) {
+      navigate("/");
+    } else {
+      setError(result.message || "Registration failed");
+    }
   };
 
   return (
@@ -174,6 +194,12 @@ const Register = () => {
 
             <form onSubmit={handleRegister} className="space-y-3">
 
+              {error && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-100 mb-3">
+                  {error}
+                </div>
+              )}
+
               {/* Full Name */}
 
               <div>
@@ -235,7 +261,7 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="Create a password"
                     required
-                    minLength={6}
+                    minLength={8}
                     autoComplete="new-password"
                     className="w-full rounded-xl border border-[#E2B4BD] bg-[#FFF5F5]/50 px-4 py-3 pr-16 text-sm text-[#4A4A4A] outline-none transition-all placeholder:text-gray-400 focus:border-[#B77D87] focus:ring-4 focus:ring-[#E2B4BD]/20"
                   />
@@ -270,7 +296,7 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="Confirm your password"
                     required
-                    minLength={6}
+                    minLength={8}
                     autoComplete="new-password"
                     className="w-full rounded-xl border border-[#E2B4BD] bg-[#FFF5F5]/50 px-4 py-3 pr-16 text-sm text-[#4A4A4A] outline-none transition-all placeholder:text-gray-400 focus:border-[#B77D87] focus:ring-4 focus:ring-[#E2B4BD]/20"
                   />
@@ -308,7 +334,7 @@ const Register = () => {
                     Terms & Conditions
                   </a>{" "}
                   and{" "}
-                  <a href="/privacy" className="font-semibold text-[#B77D87]">
+                  <a href="/privacy-policy" className="font-semibold text-[#B77D87]">
                     Privacy Policy
                   </a>.
                 </label>
@@ -320,9 +346,14 @@ const Register = () => {
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-[#4A4A4A] py-3.5 text-base font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#333333] hover:shadow-xl active:translate-y-0"
+                disabled={loading}
+                className={`w-full rounded-xl text-white py-3.5 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#333333] hover:shadow-xl active:translate-y-0 ${
+                  loading
+                    ? "bg-[#999999] cursor-not-allowed"
+                    : "bg-[#4A4A4A] hover:bg-[#333333]"
+                }`}
               >
-                Create Account →
+                {loading ? "Creating account..." : "Create Account →"}
               </button>
 
             </form>

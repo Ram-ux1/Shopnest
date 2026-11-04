@@ -1,10 +1,25 @@
- const Product = require("../model/product.model");
+const fs = require("node:fs/promises");
+const Product = require("../model/product.model");
+const cloudinary = require("../config/cloudinary");
 
- const cloudinary = require("../config/cloudinary");
+const removeUpload = async (file) => {
+  if (!file?.path) return;
+  await fs.rm(file.path, { force: true });
+};
+
+const uploadImage = async (file) => {
+  if (!file) return undefined;
+  try {
+    const result = await cloudinary.uploader.upload(file.path, { folder: "products" });
+    return result.secure_url;
+  } finally {
+    await removeUpload(file);
+  }
+};
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -13,7 +28,10 @@ const getAllProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);  
+    if (!/^[\da-f]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
+    const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -22,80 +40,63 @@ const getProductById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 const createProduct = async (req, res) => {
   try {
-    const { name, description, price, category, stock } = req.body;
-    const image = req.file; // Assuming you're using multer for file uploads
-    
-    if(image) {
-      // Upload the image to Cloudinary
-      try {
-        const result = await cloudinary.uploader.upload(image.path, {
-          folder: "products", // Optional: specify a folder in Cloudinary
-        });
-        imageUrl = result.secure_url; // Get the secure URL of the uploaded image
-      } catch (error) {
-        return res.status(500).json({ message: "Image upload failed", error: error.message });
-      }
-    } else {
-      return res.status(400).json({ message: "Image is required" });
+    const imageUrl = await uploadImage(req.file);
+    if (!imageUrl) {
+      return res.status(400).json({ message: "Product image is required" });
     }
-    
-    const product = new Product({
-      name,
-      description,
-      price,
-      category,
-      stock,
-      imageUrl
-    });
 
-    await product.save();
+    const product = await Product.create({ ...req.body, imageUrl });
     res.status(201).json(product);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.name === "ValidationError" ? 400 : 500).json({ message: error.message });
+  } finally {
+    await removeUpload(req.file);
   }
 };
 
 const updateProduct = async (req, res) => {
   try {
-    const { name, description, price, category, stock } = req.body;
-    const image = req.file; // Assuming you're using multer for file uploads
-    let imageUrl = ""; // Initialize the image URL
-
+    if (!/^[\da-f]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-
-    // Update the product fields
-    product.name = name || product.name;
-    product.description = description || product.description;
-    product.price = price || product.price;
-    product.category = category || product.category;
-    product.stock = stock || product.stock; 
-    product.imageUrl = imageUrl || product.imageUrl;
+    const allowedFields = ["name", "description", "price", "oldPrice", "category", "stock"];
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) product[field] = req.body[field];
+    }
+    const imageUrl = await uploadImage(req.file);
+    if (imageUrl) product.imageUrl = imageUrl;
 
     await product.save();
     res.json(product);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.name === "ValidationError" ? 400 : 500).json({ message: error.message });
+  } finally {
+    await removeUpload(req.file);
   }
 };
 
 const deleteProduct = async (req, res) => {
   try {
+    if (!/^[\da-f]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    await product.deleteOne();  
+    await product.deleteOne();
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
-    console.error("Error deleting product:", error);
     res.status(500).json({ message: error.message });
-  } 
+  }
 };
 
 module.exports = {
@@ -103,5 +104,5 @@ module.exports = {
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
 };

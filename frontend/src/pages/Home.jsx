@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowRight,
   Heart,
@@ -12,6 +11,9 @@ import {
   Tag,
   Sparkles,
 } from "lucide-react";
+import { newsletterAPI, productAPI } from "../lib/api";
+import { useCart } from "../context/cartContext";
+import { matchesCategory } from "../lib/catalog";
 
 const categories = [
   {
@@ -37,105 +39,6 @@ const categories = [
     image:
       "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=600",
     items: "70+ Products",
-  },
-];
-
-const products = [
-  {
-    id: 1,
-    name: "Classic White Sneakers",
-    category: "Fashion",
-    price: 1499,
-    oldPrice: 1999,
-    rating: 4.8,
-    reviews: 124,
-    discount: "25% OFF",
-    image:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700",
-  },
-  {
-    id: 2,
-    name: "Premium Wireless Headphones",
-    category: "Electronics",
-    price: 2499,
-    oldPrice: 3499,
-    rating: 4.7,
-    reviews: 98,
-    discount: "28% OFF",
-    image:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=700",
-  },
-  {
-    id: 3,
-    name: "Elegant Women's Handbag",
-    category: "Fashion",
-    price: 999,
-    oldPrice: 1499,
-    rating: 4.9,
-    reviews: 156,
-    discount: "33% OFF",
-    image:
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=700",
-  },
-  {
-    id: 4,
-    name: "Luxury Skincare Set",
-    category: "Beauty",
-    price: 799,
-    oldPrice: 1199,
-    rating: 4.6,
-    reviews: 87,
-    discount: "30% OFF",
-    image:
-      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=700",
-  },
-  {
-    id: 5,
-    name: "Modern Wrist Watch",
-    category: "Accessories",
-    price: 1899,
-    oldPrice: 2499,
-    rating: 4.8,
-    reviews: 112,
-    discount: "24% OFF",
-    image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=700",
-  },
-  {
-    id: 6,
-    name: "Minimal Table Lamp",
-    category: "Home",
-    price: 1299,
-    oldPrice: 1799,
-    rating: 4.7,
-    reviews: 76,
-    discount: "28% OFF",
-    image:
-      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=700",
-  },
-  {
-    id: 7,
-    name: "Stylish Sunglasses",
-    category: "Fashion",
-    price: 599,
-    oldPrice: 999,
-    rating: 4.5,
-    reviews: 65,
-    discount: "40% OFF",
-    image:
-      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=700",
-  },
-  {
-    id: 8,
-    name: "Smart Bluetooth Speaker",
-    category: "Electronics",
-    price: 1599,
-    oldPrice: 2199,
-    rating: 4.8,
-    reviews: 103,
-    discount: "27% OFF",
-    image:
-      "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=700",
   },
 ];
 
@@ -169,8 +72,9 @@ const ProductCard = ({
   addToCart,
   cart,
 }) => {
-  const isWishlisted = wishlist.includes(product.id);
-  const isAdded = cart.includes(product.id);
+  const id = product._id || product.id;
+  const isWishlisted = wishlist.includes(id);
+  const isAdded = cart.includes(id);
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-[#E2B4BD]/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
@@ -179,17 +83,19 @@ const ProductCard = ({
       <div className="relative bg-[#FFF5F5] overflow-hidden">
 
         <img
-          src={product.image}
+          src={product.imageUrl || product.image}
           alt={product.name}
           className="w-full h-48 sm:h-52 object-cover group-hover:scale-105 transition-transform duration-500"
         />
 
-        <span className="absolute top-3 left-3 bg-[#E2B4BD] text-[#24564D] text-xs font-bold px-3 py-1.5 rounded-full">
-          {product.discount}
-        </span>
+        {product.discount && (
+          <span className="absolute top-3 left-3 bg-[#E2B4BD] text-[#24564D] text-xs font-bold px-3 py-1.5 rounded-full">
+            {product.discount}
+          </span>
+        )}
 
         <button
-          onClick={() => toggleWishlist(product.id)}
+          onClick={() => toggleWishlist(id)}
           aria-label="Toggle wishlist"
           className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition ${
             isWishlisted
@@ -222,7 +128,7 @@ const ProductCard = ({
             {product.rating}
           </span>
           <span className="text-xs text-gray-400">
-            ({product.reviews} reviews)
+            ({product.numReviews || 0} reviews)
           </span>
         </div>
 
@@ -231,13 +137,16 @@ const ProductCard = ({
             ₹{product.price.toLocaleString("en-IN")}
           </span>
 
-          <span className="text-xs text-gray-400 line-through">
-            ₹{product.oldPrice.toLocaleString("en-IN")}
-          </span>
+          {product.oldPrice && (
+            <span className="text-xs text-gray-400 line-through">
+              ₹{product.oldPrice.toLocaleString("en-IN")}
+            </span>
+          )}
         </div>
 
         <button
-          onClick={() => addToCart(product.id)}
+          onClick={() => addToCart(product)}
+          disabled={product.stock === 0}
           className={`w-full mt-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${
             isAdded
               ? "bg-[#E2B4BD] text-[#24564D]"
@@ -245,7 +154,7 @@ const ProductCard = ({
           }`}
         >
           <ShoppingCart size={16} />
-          {isAdded ? "Added to Cart ✓" : "Add to Cart"}
+          {product.stock === 0 ? "Out of Stock" : isAdded ? "Added to Cart ✓" : "Add to Cart"}
         </button>
 
       </div>
@@ -255,9 +164,30 @@ const ProductCard = ({
 
 const Home = () => {
   const [wishlist, setWishlist] = useState([]);
-  const [cart, setCart] = useState([]);
+  const { items, addItem } = useCart();
   const [email, setEmail] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await productAPI.getAll();
+        setProducts(response.data || []);
+      } catch (err) {
+        setError("Failed to load products");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const toggleWishlist = (id) => {
     setWishlist((prev) =>
@@ -267,28 +197,42 @@ const Home = () => {
     );
   };
 
-  const addToCart = (id) => {
-    setCart((prev) =>
-      prev.includes(id) ? prev : [...prev, id]
-    );
-  };
-
+  const cart = items.map((item) => item._id || item.id);
   const filteredProducts =
     activeCategory === "All"
       ? products
-      : products.filter(
-          (product) => product.category === activeCategory
-        );
+      : products.filter((product) => matchesCategory(product.category, activeCategory));
 
-  const handleNewsletter = (e) => {
+  const handleNewsletter = async (e) => {
     e.preventDefault();
-
-    alert("Thank you for subscribing to Shopnest!");
-    setEmail("");
+    setNewsletterMessage("");
+    try {
+      const { data } = await newsletterAPI.subscribe(email);
+      setNewsletterMessage(data.message);
+      setEmail("");
+    } catch (requestError) {
+      setNewsletterMessage(requestError.response?.data?.message || "Subscription failed. Please try again.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#24564D]"></div>
+      </div>
+    );
+  }
 
   return (
     <main className="bg-[#FFF5F5] min-h-screen">
+
+      {error && (
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="p-4 rounded-lg bg-red-50 text-red-700 text-sm border border-red-100">
+            {error}
+          </div>
+        </div>
+      )}
 
       {/* HERO SECTION */}
       <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -531,7 +475,7 @@ const Home = () => {
 
           <div className="flex flex-wrap gap-2">
 
-            {["All", "Fashion", "Electronics", "Beauty", "Home"].map(
+            {["All", "Fashion", "Electronics", "Beauty", "Home & Living"].map(
               (category) => (
                 <button
                   key={category}
@@ -555,11 +499,11 @@ const Home = () => {
 
           {filteredProducts.map((product) => (
             <ProductCard
-              key={product.id}
+              key={product._id || product.id}
               product={product}
               wishlist={wishlist}
               toggleWishlist={toggleWishlist}
-              addToCart={addToCart}
+              addToCart={addItem}
               cart={cart}
             />
           ))}
@@ -583,7 +527,6 @@ const Home = () => {
           </a>
 
         </div>
-
       </section>
 
       {/* SPECIAL OFFER BANNER */}
@@ -740,6 +683,7 @@ const Home = () => {
             </button>
 
           </form>
+          {newsletterMessage && <p role="status" className="mt-3 text-sm text-white">{newsletterMessage}</p>}
 
         </div>
       </section>

@@ -1,13 +1,36 @@
 
 import React, { useState } from "react";
+import { useAuth } from "../context/authContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-
-    // Connect your login API here
+    setLoading(true);
+    setError("");
+    const result = await login(formData.email, formData.password);
+    setLoading(false);
+    if (result.success) {
+      navigate("/");
+    } else {
+      setError(result.message || "Login failed");
+    }
   };
 
   return (
@@ -132,6 +155,12 @@ const Login = () => {
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-3">
 
+              {error && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-100">
+                  {error}
+                </div>
+              )}
+
               {/* Email */}
               <div>
                 <label className="block text-sm font-semibold text-[#4A4A4A] mb-1.5">
@@ -140,6 +169,9 @@ const Login = () => {
 
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="you@example.com"
                   required
                   autoComplete="email"
@@ -155,19 +187,15 @@ const Login = () => {
                     Password
                   </label>
 
-                  <a
-                    href="/forgot-password"
-                    className="text-xs font-semibold text-[#B77D87] hover:text-[#4A4A4A] transition"
-                  >
-                    Forgot Password?
-                  </a>
-
                 </div>
 
                 <div className="relative">
 
                   <input
                     type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     placeholder="Enter your password"
                     required
                     autoComplete="current-password"
@@ -206,9 +234,14 @@ const Login = () => {
               {/* Login Button */}
               <button
                 type="submit"
-                className="w-full py-2 rounded-xl bg-[#4A4A4A] text-white font-bold text-sm shadow-lg hover:bg-[#333333] hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+                disabled={loading}
+                className={`w-full py-2 rounded-xl text-white font-bold text-sm shadow-lg hover:bg-[#333333] hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 ${
+                  loading
+                    ? "bg-[#999999] cursor-not-allowed"
+                    : "bg-[#4A4A4A]"
+                }`}
               >
-                Login to Shopnest →
+                {loading ? "Logging in..." : "Login to Shopnest →"}
               </button>
 
             </form>

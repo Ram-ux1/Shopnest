@@ -5,7 +5,7 @@ const User = require("../model/user.model");
 const getAdminStats = async (req, res) => {
   try {
     const orders = await Order.find({});
-    const totalIncome = orders.reduce((acc, order) => acc + order.totalAmount, 0);
+    const totalIncome = orders.reduce((acc, order) => acc + (Number(order.totalAmount) || 0), 0);
     const totalProducts = await Product.countDocuments({});
     const totalUsers = await User.countDocuments({role: "user"});
     const totalOrders = orders.length;
