@@ -13,6 +13,7 @@ import Categories from './pages/Categories'
 import About from './pages/About'
 import Checkout from './pages/Checkout'
 import InformationPage from './pages/InformationPage'
+import ScrollToTop from './components/ScrollToTop'
 
 const ProtectedRoute = ({ adminOnly = false }) => {
   const { user, loading } = useAuth()
@@ -25,6 +26,7 @@ const ProtectedRoute = ({ adminOnly = false }) => {
 const App = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -46,6 +48,7 @@ const App = () => {
         </Route>
       </Routes>
       <Footer />
+    <ScrollToTop />
     </Router>
   )
 }

@@ -132,6 +132,9 @@ const Shop = () => {
             alt={product.name}
             className="w-full h-48 sm:h-52 object-cover group-hover:scale-105 transition-transform duration-500"
           />
+          {
+            console.log(product.imageUrl || product.image)
+          }
 
           {product.discount && (
             <span className="absolute top-3 left-3 bg-[#E2B4BD] text-[#24564D] text-xs font-bold px-3 py-1.5 rounded-full">
